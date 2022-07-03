@@ -14,8 +14,12 @@ read keyboard
 echo -en "${sep} Username: "
 read username
 
+echo -e "${sep} Configuring mirrors..."
+pacman -Syy reflector --noconfirm
+reflector --sort rate -l 5 --save /etc/pacman.d/mirrorlist
+
 echo -e "${sep} Installing essential packages..."
-pacstrap /mnt base base-devel efibootmgr git grub gvfs linux linux-firmware nano networkmanager os-prober
+pacstrap /mnt base base-devel efibootmgr git grub gvfs linux linux-firmware pulseaudio nano networkmanager os-prober
 
 echo -e "${sep} Generating fstab file..."
 genfstab -U /mnt >> /mnt/etc/fstab
@@ -55,6 +59,10 @@ sed -i "s/# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/%wheel ALL=(ALL:ALL) NOPASSWD: AL
 
 echo -e "${line} Enable Network Manager. (9/14)"
 systemctl enable NetworkManager.service --now
+
+echo -e "${sep} Configuring mirrors..."
+pacman -S reflector --noconfirm
+reflector --sort rate -l 5 --save /etc/pacman.d/mirrorlist
 
 echo -e "${line} Installing the AUR helper... (10/14)"
 pushd /opt
