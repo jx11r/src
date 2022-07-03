@@ -97,7 +97,7 @@ echo -e "${sep} Cleaning up..."
 rm -rf /mnt/root/install.sh
 rm -rf /mnt/opt/yay-bin
 
-echo -e "${sep} Umounting the file systems..."
+echo -e "${sep} Unmounting the file systems..."
 umount -R /mnt
 
 echo -e "${sep} Installation finished."
