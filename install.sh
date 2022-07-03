@@ -8,11 +8,11 @@ magenta="\033[1;35m"
 sep="${cyan}::${reset}"
 line="${magenta} ->${reset}"
 
-echo -en "${sep} Insert the username: "
-read username
-
-echo -en "${sep} Insert the console keyboard layout: "
+echo -en "${sep} Console keyboard layout: "
 read keyboard
+
+echo -en "${sep} Username: "
+read username
 
 echo -e "${sep} Installing essential packages..."
 pacstrap /mnt base base-devel efibootmgr git grub gvfs linux linux-firmware nano networkmanager os-prober
@@ -31,7 +31,7 @@ ln -sf /usr/share/zoneinfo/America/Mexico_City /etc/localtime
 hwclock --systohc
 
 echo -e "${line} Set the localization. (2/14)"
-sed -i "s/#en_US.UTF-8/en_US.UTF-8/"
+sed -i "s/#en_US.UTF-8/en_US.UTF-8/" /etc/locale.gen
 echo LANG=en_US.UTF-8 > /etc/locale.conf
 locale-gen
 
