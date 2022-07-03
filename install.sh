@@ -82,7 +82,7 @@ echo -e "${line} Installing GRUB... (14/16)"
 grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=ArchLinux
 
 echo -e "${line} Enable os-prober. (15/16)"
-sed -i "s/GRUB_DISABLE_OS_PROBER=true/GRUB_DISABLE_OS_PROBER=false/" /etc/default/grub
+sed -i "s/#GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/" /etc/default/grub
 
 echo -e "${line} Generate the GRUB configuration file. (16/16)"
 grub-mkconfig -o /boot/grub/grub.cfg
