@@ -22,7 +22,7 @@ pacman -S reflector --noconfirm
 reflector --latest 5 --sort rate --save /etc/pacman.d/mirrorlist
 
 echo -e "${sep} Installing essential packages..."
-pacstrap -K /mnt base base-devel linux-lts linux-lts-headers linux-firmware \
+pacstrap -K /mnt base base-devel linux linux-firmware \
   efibootmgr grub os-prober ntfs-3g gvfs dhcp ntp networkmanager pulseaudio \
   reflector xorg-server xorg-xinit gnome-keyring libsecret openssh git nano
 
