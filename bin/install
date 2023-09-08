@@ -2,6 +2,30 @@
 
 set -e
 
+: '
+Please be advised that this is a personal guide and should not be used by others.
+
+1. Download the latest Arch Linux [ISO](https://archlinux.org/download/).
+2. [Connect](https://wiki.archlinux.org/title/Iwd#iwctl) to the internet.
+3. Format and mount disks/partitions:
+```shell
+mkfs.fat -F 32 -n boot /dev/sda1
+mkfs.xfs -L root /dev/sda3
+mkfs.xfs -L home /dev/sda4
+
+mkswap -L swap /dev/sda2
+swapon !$
+
+mount /dev/sda3 /mnt
+mount --mkdir /dev/sda1 !$/boot/efi
+mount --mkdir /dev/sda3 /mnt/home
+```
+4. Finally run this script:
+```shell
+bash <(curl -s https://raw.githubusercontent.com/jx11r/src/i/bin/install)
+```
+'
+
 reset="\033[0m"
 cyan="\033[1;36m"
 magenta="\033[1;35m"
@@ -25,7 +49,7 @@ echo -e "${sep} Installing essential packages..."
 pacstrap -K /mnt base base-devel linux linux-firmware \
   efibootmgr grub os-prober ntfs-3g gvfs ntp networkmanager dhcpcd polkit \
   reflector xorg-server xorg-xinit gnome-keyring openssh libsecret git nano \
-  alsa-tools alsa-utils pipewire-pulse pipewire-pulse pipewire-jack rtkit at-spi2-core
+  alsa-tools alsa-utils pipewire-alsa pipewire-pulse pipewire-jack rtkit at-spi2-core
 
 echo -e "${sep} Generating the fstab file..."
 genfstab -U /mnt >> /mnt/etc/fstab
