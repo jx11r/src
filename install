@@ -1,0 +1,126 @@
+#!/usr/bin/env bash
+
+: '
+WARNING: This is a personal guide and is not intended for use by others.
+1. Download the latest Arch Linux [ISO](https://archlinux.org/download/).
+2. [Connect](https://wiki.archlinux.org/title/Iwd#iwctl) to the internet.
+3. Format and mount disks/partitions:
+```shell
+mkfs.fat -F 32 -n boot /dev/sda1
+mkfs.xfs -L root /dev/sda3
+mkfs.xfs -L home /dev/sda4
+mkswap -L swap /dev/sda2
+swapon /dev/sda2
+mount /dev/sda3 /mnt
+mount --mkdir /dev/sda1 /mnt/boot/efi
+mount --mkdir /dev/sda4 /mnt/home
+```
+4. Finally run this script:
+```shell
+bash <(curl -s https://raw.githubusercontent.com/jx11r/src/bin/install)
+```
+'
+
+set -euo pipefail
+
+reset="\033[0m"
+cyan="\033[1;36m"
+sep="${cyan}::${reset}"
+
+echo -en "${sep} Keyboard layout (us, es, la-latin1): "
+read -r layout
+
+echo -en "${sep} Username: "
+read -r username
+
+echo -e "${sep} Updating keyring..."
+pacman -Sy --noconfirm archlinux-keyring
+
+echo -e "${sep} Installing reflector..."
+pacman -S --noconfirm reflector
+
+echo -e "${sep} Optimizing mirrorlist..."
+reflector --latest 300 --threads 10 --sort rate -p https -f 5 --save /etc/pacman.d/mirrorlist
+
+echo -e "${sep} Installing base system..."
+pacstrap -K /mnt base base-devel linux linux-firmware \
+  grub efibootmgr os-prober ntfs-3g networkmanager reflector git
+
+echo -e "${sep} Generating fstab..."
+genfstab -U /mnt >> /mnt/etc/fstab
+
+tee /mnt/root/setup.sh > /dev/null << 'EOF'
+#!/usr/bin/env bash
+set -euo pipefail
+
+reset="\033[0m"
+magenta="\033[1;35m"
+log() { echo -e "${magenta} ->${reset} $1"; }
+
+timezone="America/Mexico_City"
+layout="{{LAYOUT}}"
+username="{{USERNAME}}"
+
+log "Setting timezone..."
+ln -sf /usr/share/zoneinfo/$timezone /etc/localtime
+hwclock --systohc
+
+log "Configuring locale..."
+sed -i 's/^#en_US.UTF-8/en_US.UTF-8/' /etc/locale.gen
+locale-gen
+echo "LANG=en_US.UTF-8" > /etc/locale.conf
+
+log "Setting keyboard layout..."
+echo "KEYMAP=${layout}" > /etc/vconsole.conf
+
+log "Setting hostname..."
+echo "archlinux" > /etc/hostname
+
+log "Setting root password..."
+passwd
+
+log "Creating user $username..."
+useradd -m -G wheel -s /bin/bash $username
+passwd $username
+
+log "Enabling sudo for wheel group..."
+sed -i 's/^# %wheel ALL=(ALL:ALL) NOPASSWD: ALL/%wheel ALL=(ALL:ALL) NOPASSWD: ALL/' /etc/sudoers
+
+log "Enabling NetworkManager..."
+systemctl enable NetworkManager
+
+log "Updating pacman.conf appearance..."
+sed -i 's/^#Color/Color\nILoveCandy/' /etc/pacman.conf
+
+log "Optimizing mirrorlist..."
+reflector --latest 300 --threads 10 --sort rate -p https -f 5 --save /etc/pacman.d/mirrorlist
+
+log "Installing yay..."
+mkdir -p /opt/yay-bin
+chown $username /opt/yay-bin
+sudo -u $username git clone https://aur.archlinux.org/yay-bin.git /opt/yay-bin
+sudo -u $username bash -c "cd /opt/yay-bin && makepkg -si --noconfirm"
+
+log "Installing GRUB..."
+grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=ArchLinux
+
+log "Enabling os-prober..."
+sed -i 's/^#GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' /etc/default/grub
+grub-mkconfig -o /boot/grub/grub.cfg
+EOF
+
+sed -i "s/{{LAYOUT}}/${layout}/" /mnt/root/setup.sh
+sed -i "s/{{USERNAME}}/${username}/" /mnt/root/setup.sh
+chmod +x /mnt/root/setup.sh
+
+echo -e "${sep} Entering chroot environment..."
+arch-chroot /mnt /root/setup.sh
+
+echo -e "${sep} Cleaning up..."
+rm -f /mnt/root/setup.sh
+rm -rf /mnt/opt/yay-bin
+
+echo -e "${sep} Unmounting partitions..."
+umount -R /mnt
+
+echo -e "${sep} Installation complete"
