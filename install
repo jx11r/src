@@ -44,7 +44,10 @@ reflector --latest 300 --threads 10 --sort rate -p https -f 5 --save /etc/pacman
 
 echo -e "${sep} Installing base system..."
 pacstrap -K /mnt base base-devel linux linux-firmware \
-  grub efibootmgr os-prober ntfs-3g networkmanager reflector git
+  grub efibootmgr os-prober ntfs-3g networkmanager git
+
+echo -e "${sep} Copying mirrorlist to /mnt..."
+cp /etc/pacman.d/mirrorlist /mnt/etc/pacman.d/mirrorlist
 
 echo -e "${sep} Generating fstab..."
 genfstab -U /mnt >> /mnt/etc/fstab
@@ -91,9 +94,6 @@ systemctl enable NetworkManager
 
 log "Updating pacman.conf appearance..."
 sed -i 's/^#Color/Color\nILoveCandy/' /etc/pacman.conf
-
-log "Optimizing mirrorlist..."
-reflector --latest 300 --threads 10 --sort rate -p https -f 5 --save /etc/pacman.d/mirrorlist
 
 log "Installing yay..."
 mkdir -p /opt/yay-bin
