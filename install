@@ -6,14 +6,12 @@ WARNING: This is a personal guide and is not intended for use by others.
 2. [Connect](https://wiki.archlinux.org/title/Iwd#iwctl) to the internet.
 3. Format and mount disks/partitions:
 ```shell
-mkfs.fat -F 32 -n boot /dev/sda1
-mkfs.xfs -L root /dev/sda3
-mkfs.xfs -L home /dev/sda4
-mkswap -L swap /dev/sda2
-swapon /dev/sda2
-mount /dev/sda3 /mnt
+mkfs.fat -F 32 /dev/sda1
+mkfs.ext4 -L root /dev/sda2
+mkfs.ext4 -L home /dev/sda3
+mount /dev/sda2 /mnt
 mount --mkdir /dev/sda1 /mnt/boot/efi
-mount --mkdir /dev/sda4 /mnt/home
+mount --mkdir /dev/sda3 /mnt/home
 ```
 4. Finally run this script:
 ```shell
@@ -63,6 +61,13 @@ log() { echo -e "${magenta} ->${reset} $1"; }
 timezone="America/Mexico_City"
 layout="{{LAYOUT}}"
 username="{{USERNAME}}"
+
+log "Creating swapfile..."
+fallocate -l 4G /swapfile
+chmod 600 /swapfile
+mkswap /swapfile
+swapon /swapfile
+echo '/swapfile none swap defaults 0 0' >> /etc/fstab
 
 log "Setting timezone..."
 ln -sf /usr/share/zoneinfo/$timezone /etc/localtime
