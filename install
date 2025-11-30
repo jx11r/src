@@ -8,10 +8,13 @@ WARNING: This is a personal guide and is not intended for use by others.
 ```shell
 mkfs.fat -F 32 /dev/sda1
 mkfs.ext4 -L root /dev/sda2
-mkfs.ext4 -L home /dev/sda3
+mkfs.ext4 -L var /dev/sda3
+mkfs.ext4 -L home /dev/sda4
+
 mount /dev/sda2 /mnt
 mount --mkdir /dev/sda1 /mnt/boot/efi
-mount --mkdir /dev/sda3 /mnt/home
+mount --mkdir /dev/sda3 /mnt/var
+mount --mkdir /dev/sda4 /mnt/home
 ```
 4. Finally run this script:
 ```shell
@@ -108,7 +111,9 @@ sudo -u $username bash -c "cd /opt/yay-bin && makepkg -si --noconfirm"
 log "Installing GRUB..."
 grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=ArchLinux
 
-log "Enabling os-prober..."
+log "Setting GRUB..."
+sed -i 's/^GRUB_DEFAULT=0/GRUB_DEFAULT=saved/' /etc/default/grub
+sed -i 's/^#GRUB_SAVEDEFAULT=true/GRUB_SAVEDEFAULT=true/' /etc/default/grub
 sed -i 's/^#GRUB_DISABLE_OS_PROBER=false/GRUB_DISABLE_OS_PROBER=false/' /etc/default/grub
 grub-mkconfig -o /boot/grub/grub.cfg
 EOF
