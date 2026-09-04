@@ -109,7 +109,7 @@ sudo -u $username git clone https://aur.archlinux.org/yay-bin.git /opt/yay-bin
 sudo -u $username bash -c "cd /opt/yay-bin && makepkg -si --noconfirm"
 
 log "Installing GRUB..."
-grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=ArchLinux
+grub-install --target=x86_64-efi --efi-directory=/boot/efi
 
 log "Setting GRUB..."
 sed -i 's/^GRUB_DEFAULT=0/GRUB_DEFAULT=saved/' /etc/default/grub
